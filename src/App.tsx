@@ -51,28 +51,49 @@ const getFacilityColor = (name: string) => {
 // 2. 광고 컴포넌트
 // ==========================================
 const AdBanner = () => {
-  const adRef = useRef<HTMLModElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const adPushed = useRef(false);
 
   useEffect(() => {
-    if (adRef.current && !adRef.current.hasAttribute('data-adsbygoogle-status')) {
-      try {
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-      } catch (e: any) {
-        if (!e.message?.includes("already have ads")) {
-          console.error("AdSense error", e);
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !adPushed.current) {
+          const ins = container.querySelector('ins');
+          if (ins && container.offsetWidth > 0) {
+            adPushed.current = true;
+            try {
+              ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+            } catch (e: any) {
+              if (!e.message?.includes("already have ads") && !e.message?.includes("availableWidth=0")) {
+                console.error("AdSense error", e);
+              }
+            }
+          }
         }
-      }
-    }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(container);
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   return (
-    <ins ref={adRef}
-         className="adsbygoogle"
-         style={{ display: 'block', width: '100%', height: '100%' }}
-         data-ad-client="ca-pub-7204177319630647"
-         data-ad-slot=""
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
+    <div ref={containerRef} className="w-full h-full min-w-[200px] min-h-[50px] overflow-hidden block">
+      <ins className="adsbygoogle"
+           style={{ display: 'block', width: '100%', height: '100%' }}
+           data-ad-client="ca-pub-7204177319630647"
+           data-ad-slot=""
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    </div>
   );
 };
 
@@ -115,6 +136,14 @@ export default function App() {
   const [volDateTimes, setVolDateTimes] = useState([{ date: '', time: '' }]);
   const [volSkills, setVolSkills] = useState('');
   const [isRegisteringVol, setIsRegisteringVol] = useState(false);
+
+  // 모바일 하단 광고 상태
+  const [showMobileAd, setShowMobileAd] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowMobileAd(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const addDateTimeRow = () => setVolDateTimes([...volDateTimes, { date: '', time: '' }]);
   const removeDateTimeRow = (index: number) => setVolDateTimes(volDateTimes.filter((_, i) => i !== index));
@@ -511,7 +540,7 @@ export default function App() {
       </header>
 
       {/* 메인 콘텐츠 영역 (광고 포함) */}
-      <div className="flex justify-center max-w-[1600px] mx-auto w-full">
+      <div className="flex justify-center max-w-[1600px] mx-auto w-full pb-24 xl:pb-0">
         {/* 왼쪽 광고 영역 (큰 화면에서만 표시) */}
         <aside className="hidden xl:block w-[240px] shrink-0 pt-8 pl-4">
           <div className="sticky top-24 bg-gray-100 border border-gray-200 rounded-2xl h-[600px] flex flex-col items-center justify-center text-gray-400 font-medium shadow-sm overflow-hidden relative">
@@ -561,10 +590,11 @@ export default function App() {
           <>
             {/* 달력 뷰 */}
             {viewMode === 'calendar' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* 달력 컨트롤러 */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-xl font-bold text-gray-800">
+              <div className="overflow-x-auto pb-4">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden w-full">
+                  {/* 달력 컨트롤러 */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                    <h2 className="text-xl font-bold text-gray-800">
                     {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
                   </h2>
                   <div className="flex gap-2">
@@ -606,21 +636,21 @@ export default function App() {
                     const isToday = new Date().toDateString() === new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day).toDateString();
 
                     return (
-                      <div key={day} className={`min-h-[120px] p-2 border-b border-r border-gray-100 transition-colors hover:bg-gray-50 ${isToday ? 'bg-indigo-50/30' : ''}`}>
-                        <div className="flex justify-between items-start mb-1">
-                          <div className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-indigo-600 text-white' : 'text-gray-700'}`}>
+                      <div key={day} className={`min-h-[100px] sm:min-h-[120px] p-1 sm:p-2 border-b border-r border-gray-100 transition-colors hover:bg-gray-50 ${isToday ? 'bg-indigo-50/30' : ''}`}>
+                        <div className="flex flex-wrap justify-between items-start mb-1 gap-1">
+                          <div className={`text-xs sm:text-sm font-medium w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-indigo-600 text-white' : 'text-gray-700'}`}>
                             {day}
                           </div>
                           {dayVolunteers.length > 0 && (
-                            <div className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded-md flex items-center gap-1">
-                              <UserPlus className="w-3 h-3" />
-                              예비 {dayVolunteers.length}명
+                            <div className="text-[9px] sm:text-[10px] text-emerald-700 font-bold bg-emerald-100 px-1 py-0.5 rounded flex items-center gap-0.5">
+                              <UserPlus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                              <span className="hidden sm:inline">예비 </span>{dayVolunteers.length}명
                             </div>
                           )}
                         </div>
                         
                         {/* 해당 날짜의 스케줄 표시 */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-1 sm:space-y-1.5">
                           {daySchedules.map(schedule => {
                             const isClosed = schedule.status.toUpperCase() !== 'OPEN' || schedule.currentVolunteers >= schedule.maxVolunteers;
                             const timeStr = formatDisplayTime(schedule.time);
@@ -630,21 +660,21 @@ export default function App() {
                               <div 
                                 key={schedule.id}
                                 onClick={() => setSelectedSchedule(schedule)}
-                                className={`text-xs p-1.5 rounded-md cursor-pointer truncate transition-all ${
+                                className={`text-[10px] sm:text-xs p-1 sm:p-1.5 rounded cursor-pointer truncate transition-all ${
                                   isClosed 
                                     ? 'bg-gray-100 text-gray-500 line-through opacity-70' 
                                     : `${color.bg} ${color.text} ${color.hover} hover:shadow-sm`
                                 }`}
                               >
-                                <div className="font-semibold mb-0.5 flex justify-between items-start gap-1">
-                                  <span className="truncate">{timeStr} {schedule.facilityName}</span>
-                                  <span className={`shrink-0 text-[10px] px-1 rounded font-bold ${isClosed ? 'bg-gray-200 text-gray-500' : color.badge}`}>
+                                <div className="font-semibold mb-0.5 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-0.5 xl:gap-1">
+                                  <span className="truncate w-full">{timeStr} {schedule.facilityName}</span>
+                                  <span className={`shrink-0 text-[9px] sm:text-[10px] px-1 rounded font-bold ${isClosed ? 'bg-gray-200 text-gray-500' : color.badge}`}>
                                     {schedule.currentVolunteers}/{schedule.maxVolunteers}
                                   </span>
                                 </div>
                                 {schedule.location && (
-                                  <div className="flex items-center gap-1 text-[10px] opacity-80">
-                                    <MapPin className="w-3 h-3" />
+                                  <div className="hidden sm:flex items-center gap-1 text-[9px] sm:text-[10px] opacity-80">
+                                    <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                     <span className="truncate">{schedule.location}</span>
                                   </div>
                                 )}
@@ -656,6 +686,7 @@ export default function App() {
                     );
                   })}
                 </div>
+              </div>
               </div>
             )}
 
@@ -726,8 +757,8 @@ export default function App() {
       {/* 신청 모달 (팝업) */}
       {selectedSchedule && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
-            <div className="p-6 border-b border-gray-100">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl flex flex-col max-h-[90vh]">
+            <div className="p-4 sm:p-6 border-b border-gray-100 shrink-0">
               <h3 className="text-xl font-bold">봉사 신청하기</h3>
               <p className="text-sm text-gray-500 mt-1">{selectedSchedule.facilityName} - {formatDisplayDate(selectedSchedule.date)} {formatDisplayTime(selectedSchedule.time)}</p>
               {selectedSchedule.location && (
@@ -741,7 +772,7 @@ export default function App() {
               </div>
             </div>
             
-            <form onSubmit={handleApply} className="p-6 space-y-4">
+            <form onSubmit={handleApply} className="p-4 sm:p-6 space-y-4 overflow-y-auto">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">이름</label>
                 <input
@@ -791,13 +822,13 @@ export default function App() {
       {/* 공고 등록 모달 */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl">
-            <div className="p-6 border-b border-gray-100">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl flex flex-col max-h-[90vh]">
+            <div className="p-4 sm:p-6 border-b border-gray-100 shrink-0">
               <h3 className="text-xl font-bold">새 공고 등록하기</h3>
               <p className="text-sm text-gray-500 mt-1">요양원/주간보호센터의 미용 봉사 일정을 등록합니다.</p>
             </div>
             
-            <form onSubmit={handleAddSchedule} className="p-6 space-y-4">
+            <form onSubmit={handleAddSchedule} className="p-4 sm:p-6 space-y-4 overflow-y-auto">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">기관명</label>
                 <input
@@ -905,13 +936,13 @@ export default function App() {
       {/* 봉사자 등록 모달 */}
       {isVolModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-100">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl flex flex-col max-h-[90vh]">
+            <div className="p-4 sm:p-6 border-b border-gray-100 shrink-0">
               <h3 className="text-xl font-bold text-emerald-700">봉사 가능일 등록</h3>
               <p className="text-sm text-gray-500 mt-1">미용 봉사가 가능한 날짜와 정보를 등록해주세요.</p>
             </div>
             
-            <form onSubmit={handleRegisterVolunteer} className="p-6 space-y-4">
+            <form onSubmit={handleRegisterVolunteer} className="p-4 sm:p-6 space-y-4 overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">이름</label>
@@ -1022,6 +1053,25 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* 모바일 하단 고정 광고 영역 */}
+      <div 
+        className={`xl:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)] transition-transform duration-500 ease-out ${
+          showMobileAd ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <div className="relative w-full h-[60px] sm:h-[90px] flex items-center justify-center">
+          <button 
+            onClick={() => setShowMobileAd(false)}
+            className="absolute -top-8 right-2 bg-white text-gray-500 rounded-t-lg px-3 py-1 text-xs font-medium shadow-sm border border-b-0 border-gray-200 hover:bg-gray-50 transition-colors"
+          >
+            닫기
+          </button>
+          <div className="w-full h-full overflow-hidden">
+            <AdBanner />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
