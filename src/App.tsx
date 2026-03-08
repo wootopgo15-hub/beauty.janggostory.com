@@ -522,17 +522,17 @@ export default function App() {
             <div className="flex bg-gray-100 p-1 rounded-lg">
               <button 
                 onClick={() => setViewMode('calendar')}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'calendar' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'calendar' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 <CalendarIcon className="w-4 h-4" />
-                달력
+                <span className="hidden sm:inline">달력</span>
               </button>
               <button 
                 onClick={() => setViewMode('list')}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 <LayoutList className="w-4 h-4" />
-                목록
+                <span className="hidden sm:inline">목록</span>
               </button>
             </div>
           </div>
@@ -620,7 +620,7 @@ export default function App() {
                 <div className="grid grid-cols-7 auto-rows-fr">
                   {/* 시작 요일 전까지 빈 칸 채우기 */}
                   {Array.from({ length: firstDayOfMonth }).map((_, idx) => (
-                    <div key={`empty-${idx}`} className="min-h-[120px] p-2 border-b border-r border-gray-100 bg-gray-50/50"></div>
+                    <div key={`empty-${idx}`} className="min-h-[100px] sm:min-h-[120px] p-1 sm:p-2 border-b border-r border-gray-100 bg-gray-50/50"></div>
                   ))}
                   
                   {/* 실제 날짜 렌더링 */}

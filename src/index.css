@@ -9,33 +9,3 @@ body {
   font-family: var(--font-sans);
   background-color: #f8fafc; /* slate-50 */
 }
-
-/* 모바일 세로 모드일 때 강제로 가로 모드로 회전 */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-  html, body {
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-  }
-  #root {
-    transform: rotate(-90deg);
-    transform-origin: left top;
-    width: 100vh;
-    height: 100vw;
-    overflow-x: hidden;
-    overflow-y: auto;
-    position: absolute;
-    top: 100%;
-    left: 0;
-  }
-  /* 회전된 상태에서는 vh와 vw의 의미가 뒤바뀜 */
-  .min-h-screen {
-    min-height: 100vw !important;
-  }
-  .h-screen {
-    height: 100vw !important;
-  }
-  .w-screen {
-    width: 100vh !important;
-  }
-}
