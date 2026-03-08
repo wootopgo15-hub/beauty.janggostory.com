@@ -481,8 +481,21 @@ export default function App() {
         </div>
       </header>
 
-      {/* 메인 콘텐츠 */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      {/* 메인 콘텐츠 영역 (광고 포함) */}
+      <div className="flex justify-center max-w-[1600px] mx-auto w-full">
+        {/* 왼쪽 광고 영역 (큰 화면에서만 표시) */}
+        <aside className="hidden xl:block w-[240px] shrink-0 pt-8 pl-4">
+          <div className="sticky top-24 bg-gray-100 border border-gray-200 rounded-2xl h-[600px] flex flex-col items-center justify-center text-gray-400 font-medium shadow-sm overflow-hidden relative">
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/40 text-white">
+              <span className="text-xs tracking-widest uppercase mb-1 opacity-80">Advertisement</span>
+              <span className="font-bold">광고 영역</span>
+            </div>
+            <img src="https://picsum.photos/seed/ad1/240/600" alt="광고" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          </div>
+        </aside>
+
+        {/* 메인 콘텐츠 */}
+        <main className="flex-1 max-w-6xl w-full px-4 py-8">
         {/* 로딩 및 에러 상태 표시 */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
@@ -675,7 +688,19 @@ export default function App() {
             )}
           </>
         )}
-      </main>
+        </main>
+
+        {/* 오른쪽 광고 영역 (큰 화면에서만 표시) */}
+        <aside className="hidden xl:block w-[240px] shrink-0 pt-8 pr-4">
+          <div className="sticky top-24 bg-gray-100 border border-gray-200 rounded-2xl h-[600px] flex flex-col items-center justify-center text-gray-400 font-medium shadow-sm overflow-hidden relative">
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/40 text-white">
+              <span className="text-xs tracking-widest uppercase mb-1 opacity-80">Advertisement</span>
+              <span className="font-bold">광고 영역</span>
+            </div>
+            <img src="https://picsum.photos/seed/ad2/240/600" alt="광고" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          </div>
+        </aside>
+      </div>
 
       {/* 신청 모달 (팝업) */}
       {selectedSchedule && (
