@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar as CalendarIcon, MapPin, Users, Scissors, AlertCircle, CheckCircle2, Loader2, ChevronLeft, ChevronRight, LayoutList, Plus, UserPlus, X } from 'lucide-react';
 
 // ==========================================
@@ -48,7 +48,36 @@ const getFacilityColor = (name: string) => {
 };
 
 // ==========================================
-// 2. 메인 앱 컴포넌트
+// 2. 광고 컴포넌트
+// ==========================================
+const AdBanner = () => {
+  const adRef = useRef<HTMLModElement>(null);
+
+  useEffect(() => {
+    if (adRef.current && !adRef.current.hasAttribute('data-adsbygoogle-status')) {
+      try {
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      } catch (e: any) {
+        if (!e.message?.includes("already have ads")) {
+          console.error("AdSense error", e);
+        }
+      }
+    }
+  }, []);
+
+  return (
+    <ins ref={adRef}
+         className="adsbygoogle"
+         style={{ display: 'block', width: '100%', height: '100%' }}
+         data-ad-client="ca-pub-7204177319630647"
+         data-ad-slot=""
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+  );
+};
+
+// ==========================================
+// 3. 메인 앱 컴포넌트
 // ==========================================
 export default function App() {
   // 상태 관리
@@ -486,11 +515,7 @@ export default function App() {
         {/* 왼쪽 광고 영역 (큰 화면에서만 표시) */}
         <aside className="hidden xl:block w-[240px] shrink-0 pt-8 pl-4">
           <div className="sticky top-24 bg-gray-100 border border-gray-200 rounded-2xl h-[600px] flex flex-col items-center justify-center text-gray-400 font-medium shadow-sm overflow-hidden relative">
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/40 text-white">
-              <span className="text-xs tracking-widest uppercase mb-1 opacity-80">Advertisement</span>
-              <span className="font-bold">광고 영역</span>
-            </div>
-            <img src="https://picsum.photos/seed/ad1/240/600" alt="광고" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            <AdBanner />
           </div>
         </aside>
 
@@ -693,11 +718,7 @@ export default function App() {
         {/* 오른쪽 광고 영역 (큰 화면에서만 표시) */}
         <aside className="hidden xl:block w-[240px] shrink-0 pt-8 pr-4">
           <div className="sticky top-24 bg-gray-100 border border-gray-200 rounded-2xl h-[600px] flex flex-col items-center justify-center text-gray-400 font-medium shadow-sm overflow-hidden relative">
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black/40 text-white">
-              <span className="text-xs tracking-widest uppercase mb-1 opacity-80">Advertisement</span>
-              <span className="font-bold">광고 영역</span>
-            </div>
-            <img src="https://picsum.photos/seed/ad2/240/600" alt="광고" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            <AdBanner />
           </div>
         </aside>
       </div>
